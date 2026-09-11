@@ -19,7 +19,9 @@ sales = pd.read_csv(BASE / "data" / "sales_history.csv")
 
 @app.get("/")
 def home():
-    return render_template_string((BASE / "frontend" / "index.html").read_text())
+    return render_template_string(
+    (BASE / "frontend" / "index.html").read_text(encoding="utf-8")
+)
 
 @app.get("/api/inventory")
 def get_inventory():
