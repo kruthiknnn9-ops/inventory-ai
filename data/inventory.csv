@@ -1,0 +1,7 @@
+product_id,product_name,current_stock,daily_sales,lead_time_days,reorder_level
+P001,Laptop,25,8,5,30
+P002,Wireless Mouse,120,10,3,40
+P003,Keyboard,15,6,4,25
+P004,Monitor,60,4,7,30
+P005,Headset,35,5,5,25
+P006,Webcam,18,7,4,25
