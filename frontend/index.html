@@ -3,41 +3,558 @@
 <head>
   <meta charset="utf-8">
   <title>Inventory AI Dashboard</title>
+
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 18px; margin: 12px 0; }
-    button { padding: 8px 12px; cursor: pointer; }
-    table { width:100%; border-collapse: collapse; }
-    td,th { border:1px solid #ddd; padding:8px; text-align:left; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 35px;
+      color: #172554;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 34px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      margin: 20px 0;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.07);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #172554;
+    }
+
+    /* Inventory table */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th {
+      background: #eff6ff;
+      color: #1e3a8a;
+      padding: 14px;
+      text-align: left;
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Prediction controls */
+
+    select {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+      min-width: 220px;
+    }
+
+    button {
+      padding: 12px 22px;
+      margin-left: 8px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    /* AI Result */
+
+    .prediction-result {
+      margin-top: 30px;
+    }
+
+    .prediction-header {
+      margin-bottom: 20px;
+    }
+
+    .prediction-header h2 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .prediction-header p {
+      color: #64748b;
+      margin-top: 5px;
+    }
+
+    .product-info {
+      background: #f8fafc;
+      border: 1px solid #dbeafe;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .product-name {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .product-id {
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* Clean, user-readable AI prediction cards */
+
+    .prediction-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .prediction-card {
+      padding: 22px;
+      border-radius: 18px;
+      min-height: 175px;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .prediction-card .label {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      color: #475569;
+      margin-bottom: 12px;
+    }
+
+    .prediction-card .value {
+      font-size: 48px;
+      line-height: 1;
+      font-weight: 800;
+      margin-bottom: 9px;
+    }
+
+    .prediction-card .unit {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .prediction-summary {
+      margin-top: 22px;
+      overflow-x: auto;
+    }
+
+    .prediction-summary table {
+      margin-top: 0;
+      min-width: 620px;
+    }
+
+    .prediction-summary th {
+      background: #f8fafc;
+    }
+
+    .prediction-summary td strong {
+      font-size: 18px;
+    }
+
+    .risk-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 18px;
+      border-radius: 999px;
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      min-width: 90px;
+    }
+
+    .risk-pill.high {
+      background: #dc2626;
+    }
+
+    .risk-pill.low {
+      background: #059669;
+    }
+
+    .stock-card {
+      background: linear-gradient(135deg, #eff6ff, #ffffff);
+    }
+
+    .stock-card .value {
+      color: #1d4ed8;
+    }
+
+    .demand-card {
+      background: linear-gradient(135deg, #f5f3ff, #ffffff);
+    }
+
+    .demand-card .value {
+      color: #5b21b6;
+    }
+
+    .order-card {
+      background: linear-gradient(135deg, #ecfdf5, #ffffff);
+    }
+
+    .order-card .value {
+      color: #047857;
+    }
+
+    .risk-card {
+      background: linear-gradient(135deg, #ecfdf5, #ffffff);
+    }
+
+    .risk-high {
+      color: #dc2626 !important;
+    }
+
+    .risk-low {
+      color: #059669 !important;
+    }
+
+    .prediction-header h2 {
+      font-size: 30px;
+    }
+
+    @media (max-width: 1000px) {
+      .prediction-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .message {
+      padding: 20px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    /* Mobile */
+
+    @media (max-width: 900px) {
+      .prediction-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+
+      .prediction-cards {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        margin: 10px 0 0 0;
+      }
+    }
   </style>
 </head>
+
 <body>
-<h1>AI-Powered Inventory Dashboard</h1>
-<div class="card">
-  <h2>Inventory</h2>
-  <table id="table"></table>
+
+<div class="container">
+
+  <h1>🤖 AI-Powered Inventory Dashboard</h1>
+  <div class="subtitle">
+    Smart inventory decisions using machine learning
+  </div>
+
+
+  <!-- INVENTORY -->
+
+  <div class="card">
+
+    <h2>📦 Inventory</h2>
+
+    <table id="table"></table>
+
+  </div>
+
+
+  <!-- AI PREDICTION -->
+
+  <div class="card">
+
+    <h2>🤖 AI Prediction</h2>
+
+    <select id="product"></select>
+
+    <button onclick="predict()">
+      Predict
+    </button>
+
+    <!-- Prediction result will appear here -->
+
+    <div id="result"></div>
+
+  </div>
+
 </div>
-<div class="card">
-  <h2>AI Prediction</h2>
-  <select id="product"></select>
-  <button onclick="predict()">Predict</button>
-  <pre id="result"></pre>
-</div>
+
+
 <script>
+
 async function load() {
-  const data = await fetch('/api/inventory').then(r=>r.json());
+
+  const data =
+    await fetch('/api/inventory')
+    .then(r => r.json());
+
+
   document.getElementById('table').innerHTML =
-    '<tr><th>Product</th><th>Stock</th><th>Daily Sales</th><th>Reorder Level</th></tr>' +
-    data.map(x => `<tr><td>${x.product_name}</td><td>${x.current_stock}</td><td>${x.daily_sales}</td><td>${x.reorder_level}</td></tr>`).join('');
+
+    '<tr>' +
+      '<th>Product</th>' +
+      '<th>Stock</th>' +
+      '<th>Daily Sales</th>' +
+      '<th>Reorder Level</th>' +
+    '</tr>' +
+
+    data.map(x =>
+
+      `<tr>
+        <td>${x.product_name}</td>
+        <td>${x.current_stock}</td>
+        <td>${x.daily_sales}</td>
+        <td>${x.reorder_level}</td>
+      </tr>`
+
+    ).join('');
+
+
   document.getElementById('product').innerHTML =
-    data.map(x => `<option value="${x.product_id}">${x.product_name}</option>`).join('');
+
+    data.map(x =>
+
+      `<option value="${x.product_id}">
+        ${x.product_name}
+      </option>`
+
+    ).join('');
+
 }
+
+
+/* AI Prediction */
+
 async function predict() {
-  const id = document.getElementById('product').value;
-  const data = await fetch('/api/predict/' + id).then(r=>r.json());
-  document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+
+  const id =
+    document.getElementById('product').value;
+
+
+  const result =
+    document.getElementById('result');
+
+
+  /* Loading message */
+
+  result.innerHTML = `
+    <div class="message">
+      🤖 AI is generating the prediction...
+    </div>
+  `;
+
+
+  try {
+
+    const response =
+      await fetch('/api/predict/' + id);
+
+
+    if (!response.ok) {
+      throw new Error('Prediction request failed');
+    }
+
+
+    const data =
+      await response.json();
+
+
+    /* Get risk */
+
+    const risk =
+      String(data.stockout_risk || '').toUpperCase();
+
+
+    const riskClass =
+      risk === 'HIGH' ? 'high' : 'low';
+
+
+    const riskColor =
+      risk === 'HIGH'
+        ? 'risk-high'
+        : 'risk-low';
+
+
+    /* Convert AI JSON into a clean, user-readable result */
+
+    const currentStock = Number(data.current_stock ?? 0);
+    const predictedDemand = Number(data.predicted_7_day_demand ?? 0);
+    const recommendedOrder = Number(data.recommended_order ?? 0);
+    const riskLabel = risk || 'UNKNOWN';
+
+    result.innerHTML = `
+
+      <div class="prediction-result">
+
+        <div class="prediction-header">
+          <h2>AI Prediction Result</h2>
+          <p>
+            Demand forecast and inventory recommendation
+            powered by machine learning.
+          </p>
+        </div>
+
+        <div class="product-info">
+          <div class="product-name">
+            ${data.product_name || 'Product'}
+          </div>
+          <div class="product-id">
+            Product ID: ${data.product_id || id}
+          </div>
+        </div>
+
+        <!-- Large, readable summary cards -->
+        <div class="prediction-cards">
+
+          <div class="prediction-card stock-card">
+            <div class="label">CURRENT STOCK</div>
+            <div class="value">${currentStock}</div>
+            <div class="unit">units available</div>
+          </div>
+
+          <div class="prediction-card demand-card">
+            <div class="label">PREDICTED 7-DAY DEMAND</div>
+            <div class="value">${predictedDemand.toFixed(1)}</div>
+            <div class="unit">units in next 7 days</div>
+          </div>
+
+          <div class="prediction-card order-card">
+            <div class="label">RECOMMENDED ORDER</div>
+            <div class="value">${recommendedOrder}</div>
+            <div class="unit">units to order</div>
+          </div>
+
+          <div class="prediction-card risk-card">
+            <div class="label">STOCKOUT RISK</div>
+            <div>
+              <span class="risk-pill ${riskClass}">
+                ${riskLabel}
+              </span>
+            </div>
+            <div class="unit" style="margin-top:10px;">
+              ${
+                riskLabel === 'HIGH'
+                  ? '⚠️ Current stock is insufficient.'
+                  : '✅ Current stock is sufficient.'
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Optional compact table for users who want all values at a glance -->
+        <div class="prediction-summary">
+          <table>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>Meaning</th>
+            </tr>
+            <tr>
+              <td>Current Stock</td>
+              <td><strong>${currentStock} units</strong></td>
+              <td>Inventory currently available</td>
+            </tr>
+            <tr>
+              <td>Predicted 7-Day Demand</td>
+              <td><strong>${predictedDemand.toFixed(1)} units</strong></td>
+              <td>Expected demand for the next 7 days</td>
+            </tr>
+            <tr>
+              <td>Recommended Order</td>
+              <td><strong>${recommendedOrder} units</strong></td>
+              <td>Additional stock recommended</td>
+            </tr>
+            <tr>
+              <td>Stockout Risk</td>
+              <td>
+                <span class="risk-pill ${riskClass}">${riskLabel}</span>
+              </td>
+              <td>
+                ${
+                  riskLabel === 'HIGH'
+                    ? 'Current stock may not cover demand'
+                    : 'Current stock is sufficient'
+                }
+              </td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+  catch (error) {
+
+    result.innerHTML = `
+
+      <div class="message">
+        ❌ Unable to generate prediction.
+        ${error.message}
+      </div>
+
+    `;
+
+  }
+
 }
+
+
+/* Load inventory when page opens */
+
 load();
+
 </script>
+
 </body>
 </html>
